@@ -200,7 +200,7 @@ def train(generator, discriminator, loader):
                     input_class, step, alpha).data.cpu())
             utils.save_image(
                 torch.cat(images, 0),
-                'sample/{%d}.png' % str(i + 1).zfill(6),
+                'sample/{%s}.png' % str(i + 1).zfill(6),
                 nrow=n_label * 10,
                 normalize=True,
                 range=(-1, 1))
