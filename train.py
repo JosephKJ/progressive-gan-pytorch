@@ -89,6 +89,11 @@ def sample_data(dataloader, image_size=4):
 
 
 def train(generator, discriminator, loader):
+    s_gpus = '0,1,2,3'.split(',')
+    gpus = [int(ix) for ix in s_gpus]
+    num_gpus = len(gpus)
+    torch.cuda.set_device(gpus[0])
+
     step = 0
     dataset = sample_data(loader, 4 * 2 ** step)
     pbar = tqdm(range(600000))
