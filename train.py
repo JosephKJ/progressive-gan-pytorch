@@ -209,7 +209,7 @@ def train(generator, discriminator, loader):
             torch.save(g_running, 'checkpoint/{str(%d).zfill(6)}.model' % i+1)
 
         pbar.set_description(
-            ('{i + 1}; G: {%f:.5f}; D: {%f:.5f}; '
+            ('{%d}; G: {%f:.5f}; D: {%f:.5f}; '
              'Grad: {%f:.5f}; Alpha: {%f:.3f}' %(i + 1, gen_loss_val, disc_loss_val, grad_loss_val, alpha))
         )
 
