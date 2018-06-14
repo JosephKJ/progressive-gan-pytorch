@@ -200,17 +200,18 @@ def train(generator, discriminator, loader):
                     input_class, step, alpha).data.cpu())
             utils.save_image(
                 torch.cat(images, 0),
-                f'sample/{str(i + 1).zfill(6)}.png',
+                'sample/{%d}.png' % str(i + 1).zfill(6),
                 nrow=n_label * 10,
                 normalize=True,
                 range=(-1, 1))
 
         if (i + 1) % 10000 == 0:
-            torch.save(g_running, f'checkpoint/{str(i + 1).zfill(6)}.model')
+            torch.save(g_running, 'checkpoint/{str(%d).zfill(6)}.model' % i+1)
 
         pbar.set_description(
-            (f'{i + 1}; G: {gen_loss_val:.5f}; D: {disc_loss_val:.5f};'
-             f' Grad: {grad_loss_val:.5f}; Alpha: {alpha:.3f}'))
+            ('{i + 1}; G: {%f:.5f}; D: {%f:.5f}; '
+             'Grad: {%f:.5f}; Alpha: {%f:.3f}' %(i + 1, gen_loss_val, disc_loss_val, grad_loss_val, alpha))
+        )
 
 
 if __name__ == '__main__':
