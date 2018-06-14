@@ -16,6 +16,9 @@ n_label = 1
 code_size = 512 - n_label
 batch_size = 16
 n_critic = 1
+s_gpus = '0,1,2,3'.split(',')
+gpus = [int(ix) for ix in s_gpus]
+num_gpus = len(gpus)
 
 parser = argparse.ArgumentParser(description='Progressive Growing of GANs')
 parser.add_argument('path', type=str, help='path of specified dataset', default='/raid/datasets/img_align_celeba')
@@ -28,6 +31,11 @@ generator = Generator(code_size, n_label).cuda()
 discriminator = Discriminator(n_label).cuda()
 g_running = Generator(code_size, n_label).cuda()
 g_running.train(False)
+
+generator = torch.nn.DataParallel(generator, device_ids=gpus)
+discriminator = torch.nn.DataParallel(discriminator, device_ids=gpus)
+g_running = torch.nn.DataParallel(g_running, device_ids=gpus)
+
 
 class_loss = nn.CrossEntropyLoss()
 
@@ -55,7 +63,7 @@ def lsun_loader(path):
         data = datasets.LSUNClass(
             path, transform=transform,
             target_transform=lambda x: 0)
-        data_loader = DataLoader(data, shuffle=False, batch_size=batch_size,
+        data_loader = DataLoader(data, shuffle=False, batch_size=batch_size * num_gpus,
                                  num_workers=4)
 
         return data_loader
@@ -66,7 +74,7 @@ def lsun_loader(path):
 def celeba_loader(path):
     def loader(transform):
         data = datasets.ImageFolder(path, transform=transform)
-        data_loader = DataLoader(data, shuffle=True, batch_size=batch_size,
+        data_loader = DataLoader(data, shuffle=True, batch_size=batch_size * num_gpus,
                                  num_workers=4)
 
         return data_loader
@@ -89,11 +97,6 @@ def sample_data(dataloader, image_size=4):
 
 
 def train(generator, discriminator, loader):
-    s_gpus = '0,1,2,3'.split(',')
-    gpus = [int(ix) for ix in s_gpus]
-    num_gpus = len(gpus)
-    torch.cuda.set_device(gpus[0])
-
     step = 0
     dataset = sample_data(loader, 4 * 2 ** step)
     pbar = tqdm(range(600000))
@@ -205,7 +208,7 @@ def train(generator, discriminator, loader):
                     input_class, step, alpha).data.cpu())
             utils.save_image(
                 torch.cat(images, 0),
-                'sample/{%s}.png' % str(i + 1).zfill(6),
+                'sample/%s.png' % str(i + 1).zfill(6),
                 nrow=n_label * 10,
                 normalize=True,
                 range=(-1, 1))
@@ -220,6 +223,8 @@ def train(generator, discriminator, loader):
 
 
 if __name__ == '__main__':
+    torch.cuda.set_device(gpus[0])
+
     accumulate(g_running, generator, 0)
     args = parser.parse_args()
 
