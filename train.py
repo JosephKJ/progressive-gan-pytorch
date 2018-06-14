@@ -18,7 +18,7 @@ batch_size = 16
 n_critic = 1
 
 parser = argparse.ArgumentParser(description='Progressive Growing of GANs')
-parser.add_argument('path', type=str, help='path of specified dataset')
+parser.add_argument('path', type=str, help='path of specified dataset', default='/raid/datasets/img_align_celeba')
 parser.add_argument('-d', '--data', default='celeba', type=str,
                     choices=['celeba', 'lsun'],
                     help=('Specify dataset. '
